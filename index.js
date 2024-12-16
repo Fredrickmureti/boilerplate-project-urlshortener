@@ -1,21 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const shortid = require('shortid');
-const dns = require('dns');
 const cors = require('cors');
+const dns = require('dns');
 const app = express();
 
-// Basic Configuration
+//basic configuration
 const port = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json()); // Middleware to parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded bodies
 
+app.use(cors());
+app.use(express.json()); //middlware to pass JSON BODIES
+app.use(express.urlencoded({ extended: true })); //middlware to pass URL ENCODED BODY
 app.use('/public', express.static(`${process.cwd()}/public`));
 const urlStore = {};
-
-// Function to validate URL
+//function to validate the url
 function validateUrl(url) {
   try {
     const { hostname } = new URL(url);
@@ -33,17 +32,17 @@ function validateUrl(url) {
   }
 }
 
-// Serve HTML file
-app.get('/', function (req, res) {
+//serve the HTML file
+app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Example API endpoint
-app.get('/api/hello', function (req, res) {
+//example end point
+app.get('/api/hello', (req, res) => {
   res.json({ greeting: 'hello API' });
 });
 
-// Endpoint to shorten URL
+//end point to shorten the url
 app.post('/api/shorturl', async (req, res) => {
   const { url: originalUrl } = req.body; // Access the 'url' field from the request body
 
@@ -53,7 +52,7 @@ app.post('/api/shorturl', async (req, res) => {
     if (isValidUrl) {
       const shortUrl = shortid.generate();
       urlStore[shortUrl] = originalUrl;
-      res.json({ originalUrl: originalUrl, shortUrl: shortUrl });
+      res.json({ original_url: originalUrl, short_url: shortUrl }); // Match the required response format
     } else {
       res.json({ error: 'invalid url' });
     }
@@ -62,17 +61,17 @@ app.post('/api/shorturl', async (req, res) => {
   }
 });
 
-// Route to handle redirection
+//route to handle the redirect
 app.get('/api/shorturl/:shortUrl', (req, res) => {
   const { shortUrl } = req.params;
-
   if (urlStore[shortUrl]) {
     return res.redirect(urlStore[shortUrl]);
   } else {
-    return res.status(404).json({ error: 'invalid url' });
+    return res.json({ error: 'No short url found for the given input' });
   }
 });
 
-app.listen(port, function () {
+
+app.listen(port, () => {
   console.log(`Listening on port ${port}`);
-});
+})
